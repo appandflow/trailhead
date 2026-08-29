@@ -1,0 +1,5 @@
+# Per-stage subprocess logs: large, machine-specific, not worth committing.
+results/logs/
+
+# Result JSON is deliberately NOT ignored. Your day-0 baseline has to be
+# committed -- the speed score is computed against it. See RULES.md.
