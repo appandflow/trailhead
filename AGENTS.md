@@ -47,8 +47,12 @@ repo-root `.env`. The app builds without a key and shows blank map tiles.
 
 ```bash
 npm install
+bundle install
 npx expo run:ios       # or: npx expo run:android
 ```
+
+The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run CocoaPods commands
+through Bundler, for example `cd ios && bundle exec pod install`.
 
 This public test app does not contain EAS configuration. Use only local builds
 and simulator sessions.

@@ -34,6 +34,7 @@ The native projects are committed; `expo prebuild` is not part of the build.
 
 ```bash
 npm install
+bundle install
 npx --package=stim-cli stim doctor
 npx --package=stim-cli stim start
 npx --package=stim-cli stim ios       # or: npx --package=stim-cli stim android
@@ -46,6 +47,9 @@ Android builds do not require secrets. To show Android map tiles, copy
 
 For direct Expo checks, use `npx expo run:ios` or `npx expo run:android`.
 Trailhead has no EAS build or simulator configuration.
+
+The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run direct CocoaPods
+commands through Bundler, for example `cd ios && bundle exec pod install`.
 
 See [AGENTS.md](./AGENTS.md) for how the project is laid out and the native setup
 gotchas, and [bench/README.md](./bench/README.md) for the build benchmark harness.
