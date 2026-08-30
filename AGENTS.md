@@ -50,8 +50,8 @@ npm install
 npx expo run:ios       # or: npx expo run:android
 ```
 
-This public test app does not contain EAS configuration. Use only local Expo or
-`stim` commands for builds and simulator sessions.
+This public test app does not contain EAS configuration. Use only local builds
+and simulator sessions.
 
 Note that `-derivedDataPath ios/build` collides with React Native's codegen output
 in `ios/build/generated`. Use a derived data path outside `ios/build`, and re-run
