@@ -27,6 +27,9 @@ const UNIT_OPTIONS: { value: DistanceUnit; label: string }[] = [
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
+  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const buildVersion =
+    Constants.platform?.ios?.buildNumber ?? Constants.platform?.android?.versionCode;
   const { units, hikeReminders, offlineMaps, setUnits, setHikeReminders, setOfflineMaps } =
     useSettingsStore();
   const { data: count, isPending: countPending } = useHikeCount();
@@ -152,7 +155,7 @@ export default function SettingsScreen() {
         <View style={styles.rowInner}>
           <RowLabel icon="information-circle-outline" title="Version" />
           <Text style={[styles.value, { color: colors.textMuted }]}>
-            {Constants.expoConfig?.version ?? '1.0.0'}
+            {buildVersion == null ? version : `${version} (${buildVersion})`}
           </Text>
         </View>
       </Section>
