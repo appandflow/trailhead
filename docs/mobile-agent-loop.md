@@ -37,7 +37,7 @@ device Stim owns, navigate with `snapshot -i` and its returned refs, verify name
 expectations with `find`, `get`, `is`, or `wait`, then save the evidence:
 
 ```bash
-agent-device open com.appandflow.trailhead --platform ios --udid <stim-udid> --session <name>
+agent-device open com.appandflow.trailhead --platform ios --udid <stim-udid> --session <name> --foreground
 agent-device snapshot -i --session <name>
 agent-device screenshot /tmp/<name>-before.png --session <name>
 ```
