@@ -1,0 +1,5 @@
+{
+  "ios": {
+    "simslimProfile": ".simslim/dev.json"
+  }
+}
