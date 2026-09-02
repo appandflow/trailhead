@@ -41,3 +41,5 @@ app-example
 
 # Personal overrides only -- .env itself is committed
 .env.local
+
+.worktrees/

@@ -60,3 +60,9 @@ and simulator sessions.
 Note that `-derivedDataPath ios/build` collides with React Native's codegen output
 in `ios/build/generated`. Use a derived data path outside `ios/build`, and re-run
 `pod install` after deleting `ios/build`.
+
+## Mobile agent loop
+
+Before running or validating the app, read `docs/mobile-agent-loop.md`. UI changes
+and bug fixes require before-and-after evidence collected with `agent-device` and
+included in the pull request.
