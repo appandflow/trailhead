@@ -181,7 +181,10 @@ export function RecordSheet({
               {saving ? (
                 <ActivityIndicator size="small" color={colors.danger} />
               ) : (
-                <Ionicons name="stop" size={18} color={colors.danger} />
+                <>
+                  <Ionicons name="stop" size={18} color={colors.danger} />
+                  <Text style={[styles.finishLabel, { color: colors.danger }]}>Finish</Text>
+                </>
               )}
             </Pressable>
           ) : null}
@@ -306,11 +309,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   finishButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 52,
+    gap: spacing.xs,
+    minWidth: 52,
     height: 52,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  finishLabel: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
