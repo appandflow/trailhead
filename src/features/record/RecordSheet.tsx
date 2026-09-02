@@ -1,5 +1,13 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  type AccessibilityActionEvent,
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -64,6 +72,16 @@ export function RecordSheet({
 
   const syncExpanded = useCallback((next: boolean) => setExpanded(next), []);
 
+  const onAccessibilityAction = (event: AccessibilityActionEvent) => {
+    if (event.nativeEvent.actionName === 'increment') {
+      height.value = withSpring(EXPANDED_HEIGHT, SPRING);
+      setExpanded(true);
+    } else if (event.nativeEvent.actionName === 'decrement') {
+      height.value = withSpring(COLLAPSED_HEIGHT, SPRING);
+      setExpanded(false);
+    }
+  };
+
   const pan = Gesture.Pan()
     .onStart(() => {
       startHeight.value = height.value;
@@ -104,6 +122,8 @@ export function RecordSheet({
           style={styles.grabArea}
           accessibilityRole="adjustable"
           accessibilityLabel={expanded ? 'Collapse hike stats' : 'Expand hike stats'}
+          accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+          onAccessibilityAction={onAccessibilityAction}
         >
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
           <View style={styles.statusRow}>
