@@ -64,5 +64,6 @@ in `ios/build/generated`. Use a derived data path outside `ios/build`, and re-ru
 ## Mobile agent loop
 
 Before running or validating the app, read `docs/mobile-agent-loop.md`. UI changes
-and bug fixes require before-and-after evidence collected with `agent-device` and
-included in the pull request.
+and visible bug fixes require before-and-after evidence collected with
+`agent-device` and included in the pull request. For non-visual bugs, include the
+narrow failing command output and its passing result instead.

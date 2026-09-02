@@ -7,9 +7,11 @@ Trailhead's validation and pull-request requirements.
 ## Start from a clean base
 
 `main` is the default branch. Keep its checkout clean and current before it seeds
-a worktree:
+a worktree. Run `git status --short` first; if it prints anything, stop and ask
+before continuing:
 
 ```bash
+git status --short
 git fetch --prune
 stim doctor
 stim worktree create <name> --base origin/main --carry-ignored --dir .worktrees
@@ -19,9 +21,10 @@ stim start
 stim ios # or: stim android
 ```
 
-Use the full device ID from Stim's summary for every device command. The carried
-state includes dependencies, Pods, native output, and `.env` when present. Android
-builds without `GOOGLE_MAPS_API_KEY`, but map tiles are blank.
+Use the full device ID from Stim's summary for every device command.
+`--carry-ignored` copies safe ignored paths such as dependencies, Pods, native
+output, and `.env`, plus uncommitted tracked changes that fit the selected base.
+Android builds without `GOOGLE_MAPS_API_KEY`, but map tiles are blank.
 
 Trailhead commits `ios/` and `android/`. Make native changes in those projects;
 do not run Expo prebuild. Run `stim ios` or `stim android` again after a native
@@ -34,7 +37,7 @@ device Stim owns, navigate with `snapshot -i` and its returned refs, verify name
 expectations with `find`, `get`, `is`, or `wait`, then save the evidence:
 
 ```bash
-agent-device open com.appandflow.trailhead --platform ios --udid <stim-udid> --session <name> --foreground
+agent-device open com.appandflow.trailhead --platform ios --udid <stim-udid> --session <name>
 agent-device snapshot -i --session <name>
 agent-device screenshot /tmp/<name>-before.png --session <name>
 ```
