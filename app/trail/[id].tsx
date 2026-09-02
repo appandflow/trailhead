@@ -74,32 +74,43 @@ export default function TrailDetailScreen() {
         <RouteMap points={trail.route} style={styles.map} />
       </View>
 
-      <View style={styles.statsRow}>
+      <View style={[styles.statsRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{formatDistance(trail.distanceKm * 1000, units)}</Text>
-          <Text style={styles.statLabel}>Distance</Text>
+          <Text style={[styles.statValue, { color: colors.text }]}>
+            {formatDistance(trail.distanceKm * 1000, units)}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Distance</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{formatElevation(trail.elevationGainM, units)}</Text>
-          <Text style={styles.statLabel}>Ascent</Text>
+          <Text style={[styles.statValue, { color: colors.text }]}>
+            {formatElevation(trail.elevationGainM, units)}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Ascent</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{formatDuration(trail.estimatedMinutes * 60)}</Text>
-          <Text style={styles.statLabel}>Est. time</Text>
+          <Text style={[styles.statValue, { color: colors.text }]}>
+            {formatDuration(trail.estimatedMinutes * 60)}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Est. time</Text>
         </View>
       </View>
 
-      <View style={styles.description}>
-        <Text style={styles.descriptionTitle}>About this trail</Text>
-        <Text style={styles.descriptionBody}>{trail.description}</Text>
+      <View
+        style={[styles.description, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      >
+        <Text style={[styles.descriptionTitle, { color: colors.text }]}>About this trail</Text>
+        <Text style={[styles.descriptionBody, { color: colors.textMuted }]}>{trail.description}</Text>
       </View>
 
       <View style={styles.tags}>
         {trail.tags.map((tag) => (
-          <View key={tag} style={styles.tag}>
-            <Text style={styles.tagLabel}>{tag}</Text>
+          <View
+            key={tag}
+            style={[styles.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <Text style={[styles.tagLabel, { color: colors.text }]}>{tag}</Text>
           </View>
         ))}
       </View>
@@ -164,24 +175,20 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DDE0D7',
   },
   stat: { flex: 1, alignItems: 'center', gap: 2 },
-  statValue: { fontSize: 16, fontWeight: '700', color: '#171A16' },
-  statLabel: { fontSize: 12, color: '#5F6B5C' },
-  statDivider: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: '#DDE0D7' },
+  statValue: { fontSize: 16, fontWeight: '700' },
+  statLabel: { fontSize: 12 },
+  statDivider: { width: StyleSheet.hairlineWidth, height: 28 },
   description: {
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DDE0D7',
     gap: spacing.sm,
   },
-  descriptionTitle: { fontSize: 15, fontWeight: '600', color: '#171A16' },
-  descriptionBody: { fontSize: 14, lineHeight: 21, color: '#5F6B5C' },
+  descriptionTitle: { fontSize: 15, fontWeight: '600' },
+  descriptionBody: { fontSize: 14, lineHeight: 21 },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -193,10 +200,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DDE0D7',
   },
-  tagLabel: { fontSize: 12, fontWeight: '500', color: '#171A16' },
+  tagLabel: { fontSize: 12, fontWeight: '500' },
   elevationCard: {
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
