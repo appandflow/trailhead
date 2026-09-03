@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Keyboard,
   Modal,
@@ -10,15 +10,22 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
+  runOnJS,
   SlideInDown,
   SlideOutDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -56,6 +63,8 @@ export default function TrailsScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const searchInputRef = useRef<TextInput>(null);
+  const preserveSearchOnBlurRef = useRef(false);
 
   const needle = query.trim().toLowerCase();
 
@@ -100,9 +109,26 @@ export default function TrailsScreen() {
     setSearchOpen(false);
   };
 
+  const collapseSearch = () => {
+    if (preserveSearchOnBlurRef.current) return;
+
+    setQuery('');
+    setSearchOpen(false);
+  };
+
   const openFilters = () => {
+    preserveSearchOnBlurRef.current = true;
     Keyboard.dismiss();
     setFilterSheetOpen(true);
+  };
+
+  const closeFilters = () => {
+    setFilterSheetOpen(false);
+
+    requestAnimationFrame(() => {
+      preserveSearchOnBlurRef.current = false;
+      if (searchOpen) searchInputRef.current?.focus();
+    });
   };
 
   return (
@@ -136,20 +162,25 @@ export default function TrailsScreen() {
             </Animated.View>
           ) : null}
 
-          <Animated.View
-            layout={CONTROL_TRANSITION}
-            style={[
-              styles.searchShell,
-              searchOpen ? styles.searchShellExpanded : styles.searchShellCollapsed,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-            ]}
-          >
-            {searchOpen ? (
+          {searchOpen ? (
+            <Animated.View
+              key="search-expanded"
+              entering={FadeIn.duration(180)}
+              exiting={FadeOut.duration(120)}
+              layout={CONTROL_TRANSITION}
+              style={[
+                styles.searchShell,
+                styles.searchShellExpanded,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
               <Animated.View entering={FadeIn.delay(80).duration(180)} style={styles.searchContent}>
                 <Ionicons name="search" size={18} color={colors.textMuted} />
                 <TextInput
+                  ref={searchInputRef}
                   value={query}
                   onChangeText={setQuery}
+                  onBlur={collapseSearch}
                   placeholder="Search trails, regions, tags"
                   placeholderTextColor={colors.textMuted}
                   style={[styles.searchInput, { color: colors.text }]}
@@ -170,7 +201,19 @@ export default function TrailsScreen() {
                   <Ionicons name="close-circle" size={20} color={colors.textMuted} />
                 </Pressable>
               </Animated.View>
-            ) : (
+            </Animated.View>
+          ) : (
+            <Animated.View
+              key="search-collapsed"
+              entering={FadeIn.duration(180)}
+              exiting={FadeOut.duration(120)}
+              layout={CONTROL_TRANSITION}
+              style={[
+                styles.searchShell,
+                styles.searchShellCollapsed,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
               <Pressable
                 onPress={() => setSearchOpen(true)}
                 accessibilityRole="button"
@@ -179,17 +222,20 @@ export default function TrailsScreen() {
               >
                 <Ionicons name="search" size={20} color={colors.text} />
               </Pressable>
-            )}
-          </Animated.View>
+            </Animated.View>
+          )}
 
           {searchOpen ? (
             <Animated.View
               entering={FadeIn.delay(100).duration(180)}
               exiting={FadeOut.duration(120)}
               layout={CONTROL_TRANSITION}
-              style={[styles.filterControlSlot, filterSheetOpen && styles.filterControlSlotExpanded]}
+              style={styles.filterControlSlot}
             >
               <Pressable
+                onPressIn={() => {
+                  preserveSearchOnBlurRef.current = true;
+                }}
                 onPress={openFilters}
                 accessibilityRole="button"
                 accessibilityLabel="Open trail filters"
@@ -204,26 +250,10 @@ export default function TrailsScreen() {
                 ]}
               >
                 <Ionicons name="options-outline" size={20} color={colors.primary} />
-                {filterSheetOpen ? (
-                  <Animated.Text
-                    entering={FadeIn.duration(160)}
-                    maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
-                    style={[styles.filterControlLabel, { color: colors.primary }]}
-                  >
-                    Filters
-                  </Animated.Text>
-                ) : null}
               </Pressable>
             </Animated.View>
           ) : null}
         </View>
-
-        <Text
-          maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
-          style={[styles.resultCount, { color: colors.textMuted }]}
-        >
-          {visible.length} {visible.length === 1 ? 'trail' : 'trails'}
-        </Text>
       </View>
 
       <FlashList
@@ -255,124 +285,168 @@ export default function TrailsScreen() {
         }
       />
 
-      <BottomSheet visible={sortSheetOpen} title="Sort trails" onClose={() => setSortSheetOpen(false)}>
-        <View style={styles.choiceList}>
-          {SORTS.map((option) => {
-            const selected = sort === option.key;
-            return (
+      {sortSheetOpen ? (
+        <BottomSheet title="Sort trails" onClose={() => setSortSheetOpen(false)}>
+          <View style={styles.choiceList}>
+            {SORTS.map((option) => {
+              const selected = sort === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  onPress={() => {
+                    setSort(option.key);
+                    setSortSheetOpen(false);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={`Sort by ${option.label.toLowerCase()}`}
+                  style={({ pressed }) => [
+                    styles.choiceRow,
+                    { backgroundColor: selected ? colors.primaryMuted : colors.surface },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
+                    style={[styles.choiceLabel, { color: selected ? colors.primary : colors.text }]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selected ? <Ionicons name="checkmark-circle" size={22} color={colors.primary} /> : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        </BottomSheet>
+      ) : null}
+
+      {filterSheetOpen ? (
+        <BottomSheet title="Filter trails" onClose={closeFilters}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.filterSheetContent}>
+            <FilterSection title="Region">
+              <Chip label="All regions" selected={region === null} onPress={() => setRegion(null)} />
+              {regions.map((name) => (
+                <Chip
+                  key={name}
+                  label={name}
+                  selected={region === name}
+                  onPress={() => setRegion(region === name ? null : name)}
+                />
+              ))}
+            </FilterSection>
+
+            <FilterSection title="Level">
+              <Chip label="Any level" selected={difficulty === null} onPress={() => setDifficulty(null)} />
+              {DIFFICULTIES.map((level) => (
+                <Chip
+                  key={level}
+                  label={difficultyLabel(level)}
+                  selected={difficulty === level}
+                  onPress={() => setDifficulty(difficulty === level ? null : level)}
+                />
+              ))}
+            </FilterSection>
+
+            <View style={styles.filterActions}>
               <Pressable
-                key={option.key}
                 onPress={() => {
-                  setSort(option.key);
-                  setSortSheetOpen(false);
+                  setRegion(null);
+                  setDifficulty(null);
                 }}
                 accessibilityRole="button"
-                accessibilityState={{ selected }}
-                accessibilityLabel={`Sort by ${option.label.toLowerCase()}`}
                 style={({ pressed }) => [
-                  styles.choiceRow,
-                  { backgroundColor: selected ? colors.primaryMuted : colors.surface },
+                  styles.clearButton,
+                  { borderColor: colors.border },
                   pressed && styles.pressed,
                 ]}
               >
                 <Text
                   maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
-                  style={[styles.choiceLabel, { color: selected ? colors.primary : colors.text }]}
+                  style={[styles.clearButtonLabel, { color: colors.text }]}
                 >
-                  {option.label}
+                  Clear
                 </Text>
-                {selected ? <Ionicons name="checkmark-circle" size={22} color={colors.primary} /> : null}
               </Pressable>
-            );
-          })}
-        </View>
-      </BottomSheet>
-
-      <BottomSheet visible={filterSheetOpen} title="Filter trails" onClose={() => setFilterSheetOpen(false)}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.filterSheetContent}>
-          <FilterSection title="Region">
-            <Chip label="All regions" selected={region === null} onPress={() => setRegion(null)} />
-            {regions.map((name) => (
-              <Chip
-                key={name}
-                label={name}
-                selected={region === name}
-                onPress={() => setRegion(region === name ? null : name)}
-              />
-            ))}
-          </FilterSection>
-
-          <FilterSection title="Level">
-            <Chip label="Any level" selected={difficulty === null} onPress={() => setDifficulty(null)} />
-            {DIFFICULTIES.map((level) => (
-              <Chip
-                key={level}
-                label={difficultyLabel(level)}
-                selected={difficulty === level}
-                onPress={() => setDifficulty(difficulty === level ? null : level)}
-              />
-            ))}
-          </FilterSection>
-
-          <View style={styles.filterActions}>
-            <Pressable
-              onPress={() => {
-                setRegion(null);
-                setDifficulty(null);
-              }}
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.clearButton,
-                { borderColor: colors.border },
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text
-                maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
-                style={[styles.clearButtonLabel, { color: colors.text }]}
+              <Pressable
+                onPress={closeFilters}
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                  styles.showButton,
+                  { backgroundColor: colors.primary },
+                  pressed && styles.pressed,
+                ]}
               >
-                Clear
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setFilterSheetOpen(false)}
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.showButton,
-                { backgroundColor: colors.primary },
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text
-                maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
-                style={[styles.showButtonLabel, { color: colors.textInverse }]}
-              >
-                Show {visible.length} {visible.length === 1 ? 'trail' : 'trails'}
-              </Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </BottomSheet>
+                <Text
+                  maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
+                  style={[styles.showButtonLabel, { color: colors.textInverse }]}
+                >
+                  Show {visible.length} {visible.length === 1 ? 'trail' : 'trails'}
+                </Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </BottomSheet>
+      ) : null}
     </View>
   );
 }
 
 function BottomSheet({
-  visible,
   title,
   onClose,
   children,
 }: {
-  visible: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
 }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+  const dragOffset = useSharedValue(0);
+
+  const dismissSheet = () => {
+    dragOffset.value = withTiming(
+      screenHeight,
+      { duration: 220, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(onClose)();
+      },
+    );
+  };
+
+  const dragGesture = Gesture.Pan()
+    .activeOffsetY(6)
+    .onUpdate((event) => {
+      dragOffset.value = Math.max(0, event.translationY);
+    })
+    .onEnd((event) => {
+      if (event.translationY > 80 || event.velocityY > 800) {
+        dragOffset.value = withTiming(
+          screenHeight,
+          { duration: 220, easing: Easing.in(Easing.cubic) },
+          (finished) => {
+            if (finished) runOnJS(onClose)();
+          },
+        );
+        return;
+      }
+
+      dragOffset.value = withSpring(0, { damping: 22, stiffness: 240 });
+    });
+
+  const dragStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: dragOffset.value }],
+  }));
 
   return (
-    <Modal visible={visible} transparent statusBarTranslucent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible
+      transparent
+      statusBarTranslucent
+      animationType="none"
+      onRequestClose={dismissSheet}
+    >
       <View style={styles.modalRoot}>
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -380,39 +454,45 @@ function BottomSheet({
           style={StyleSheet.absoluteFill}
         >
           <Pressable
-            onPress={onClose}
+            onPress={dismissSheet}
             accessibilityRole="button"
-            accessibilityLabel={`Close ${title.toLowerCase()}`}
+            accessibilityLabel={`Dismiss ${title.toLowerCase()}`}
             style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }]}
           />
         </Animated.View>
         <Animated.View
           entering={SHEET_IN}
           exiting={SHEET_OUT}
-          accessibilityViewIsModal
-          style={[
-            styles.sheet,
-            { backgroundColor: colors.surface, paddingBottom: Math.max(insets.bottom, spacing.lg) },
-          ]}
+          style={styles.sheetWrapper}
         >
-          <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
-          <View style={styles.sheetHeader}>
-            <Text
-              maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
-              style={[styles.sheetTitle, { color: colors.text }]}
-            >
-              {title}
-            </Text>
-            <Pressable
-              onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel={`Close ${title.toLowerCase()}`}
-              style={({ pressed }) => [styles.sheetClose, pressed && styles.pressed]}
-            >
-              <Ionicons name="close" size={22} color={colors.textMuted} />
-            </Pressable>
-          </View>
-          {children}
+          <Animated.View
+            accessibilityViewIsModal
+            style={[
+              styles.sheet,
+              { backgroundColor: colors.surface, paddingBottom: Math.max(insets.bottom, spacing.lg) },
+              dragStyle,
+            ]}
+          >
+            <GestureDetector gesture={dragGesture}>
+              <View
+                accessible
+                accessibilityRole="adjustable"
+                accessibilityLabel={`Drag to dismiss ${title.toLowerCase()}`}
+                style={styles.sheetHandleTarget}
+              >
+                <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
+              </View>
+            </GestureDetector>
+            <View style={styles.sheetHeader}>
+              <Text
+                maxFontSizeMultiplier={MAX_CONTROL_FONT_SCALE}
+                style={[styles.sheetTitle, { color: colors.text }]}
+              >
+                {title}
+              </Text>
+            </View>
+            {children}
+          </Animated.View>
         </Animated.View>
       </View>
     </Modal>
@@ -470,7 +550,7 @@ function Chip({
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  header: { paddingTop: spacing.md, paddingBottom: spacing.xs, gap: spacing.sm },
+  header: { paddingTop: spacing.md, paddingBottom: spacing.xs },
   controlRow: {
     minHeight: 44,
     flexDirection: 'row',
@@ -506,18 +586,14 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, minWidth: 0, fontSize: 15, padding: 0 },
   iconButton: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   filterControlSlot: { width: 44, height: 44 },
-  filterControlSlotExpanded: { width: 90 },
   filterControl: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  filterControlLabel: { fontSize: 13, fontWeight: '700' },
-  resultCount: { fontSize: 13, paddingHorizontal: spacing.lg },
   listContent: { padding: spacing.lg },
   separator: { height: spacing.md },
   empty: { alignItems: 'center', paddingTop: spacing.xxl, gap: spacing.sm },
@@ -535,6 +611,7 @@ const styles = StyleSheet.create({
   emptyActionLabel: { fontSize: 14, fontWeight: '600' },
   pressed: { opacity: 0.68 },
   modalRoot: { flex: 1, justifyContent: 'flex-end' },
+  sheetWrapper: { width: '100%' },
   sheet: {
     maxHeight: '82%',
     borderTopLeftRadius: radius.lg,
@@ -549,18 +626,19 @@ const styles = StyleSheet.create({
   sheetHandle: {
     width: 40,
     height: 4,
-    alignSelf: 'center',
-    marginTop: spacing.sm,
     borderRadius: radius.pill,
+  },
+  sheetHandleTarget: {
+    minHeight: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sheetHeader: {
     minHeight: 56,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
-  sheetTitle: { fontSize: 20, fontWeight: '800' },
-  sheetClose: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  sheetTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center' },
   choiceList: { gap: spacing.sm, paddingBottom: spacing.sm },
   choiceRow: {
     minHeight: 52,
