@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'react-native';
 import { useTheme } from '@/src/theme';
 
 export default function TabsLayout() {
@@ -19,6 +20,16 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Trails',
+          headerShadowVisible: false,
+          headerTitle: () => (
+            <Image
+              source={require('../../assets/images/textLogo.png')}
+              resizeMode="contain"
+              accessible
+              accessibilityLabel="TrailHead"
+              style={{ width: 132, height: 44, tintColor: colors.primary }}
+            />
+          ),
           tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" color={color} size={size} />,
         }}
       />
