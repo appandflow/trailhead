@@ -52,8 +52,10 @@ The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run direct CocoaPods
 commands through Bundler, for example `cd ios && bundle exec pod install`.
 
 The SDK 58 canary is pinned with all Expo modules in `package-lock.json`.
-Project-local npm configuration accepts prerelease peer dependencies, including
-Expo Font's stable-only peer range in Vector Icons. Reanimated 4.6.0, Worklets
+Scoped npm overrides align Vector Icons' Expo Font, Drizzle's Expo SQLite, and
+Expo Modules Core's Worklets peer ranges with the verified root versions.
+Worklets' Metro configuration peer is installed explicitly; `npm ci` and
+`npm ls --all` work without ignoring peer dependencies. Reanimated 4.6.0, Worklets
 0.12.1, Safe Area Context 5.9.1, and Skia 2.11.2 are excluded from
 `expo install --fix`: the canary's older recommendations fail native builds
 with this dependency set. ExpoVideo builds from source on iOS because its
