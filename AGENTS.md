@@ -1,6 +1,6 @@
 # Trailhead
 
-A hike recording and trail browsing app. Expo SDK 57, React Native 0.86,
+A hike recording and trail browsing app. Expo SDK 58 canary, React Native 0.87,
 TypeScript, expo-router.
 
 ## Layout
@@ -46,7 +46,7 @@ repo-root `.env`. The app builds without a key and shows blank map tiles.
 ## Running
 
 ```bash
-npm install
+npm ci
 bundle install
 npx expo run:ios       # or: npx expo run:android
 ```
