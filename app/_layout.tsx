@@ -10,6 +10,8 @@ import { initializeDatabase } from '@/src/db/client';
 import { seedHikesIfEmpty } from '@/src/db/seed';
 import { useTheme } from '@/src/theme';
 
+if (__DEV__) console.info('[stim:readiness] pending');
+
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient({
@@ -27,7 +29,15 @@ export default function RootLayout() {
   const { name, colors } = useTheme();
 
   useEffect(() => {
-    SplashScreen.hideAsync().catch(() => {});
+    let active = true;
+    SplashScreen.hideAsync()
+      .then(() => {
+        if (active && __DEV__) console.info('[stim:readiness] ready');
+      })
+      .catch(console.error);
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
