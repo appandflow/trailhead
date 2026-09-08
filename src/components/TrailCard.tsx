@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Transition from 'react-native-screen-transitions';
 
 import { trailPhotoUrl, type Difficulty, type Trail } from '@/src/data/trails';
 import { formatDistance, formatDuration, formatElevation } from '@/src/lib/format';
@@ -9,6 +11,9 @@ import { useSettingsStore } from '@/src/store/settingsStore';
 import { radius, spacing, useTheme, type Palette } from '@/src/theme';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+// Keep the existing native accessibility behavior while registering card bounds.
+const TrailCardBoundary = Transition.createBoundaryComponent(Pressable);
 
 export function difficultyColor(difficulty: Difficulty, colors: Palette): string {
   switch (difficulty) {
@@ -37,13 +42,17 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
   const router = useRouter();
   const units = useSettingsStore((s) => s.units);
   const accent = difficultyColor(trail.difficulty, colors);
+  const [pressed, setPressed] = useState(false);
 
   return (
-    <Pressable
+    <TrailCardBoundary
+      id={`trail-${trail.id}`}
       onPress={() => router.push({ pathname: '/trail/[id]', params: { id: trail.id } })}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       accessibilityRole="button"
       accessibilityLabel={`${trail.name}, ${trail.region}, ${difficultyLabel(trail.difficulty)}, rated ${trail.rating.toFixed(1)} out of 5`}
-      style={({ pressed }) => [
+      style={[
         styles.card,
         { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.9 : 1 },
       ]}
@@ -88,7 +97,7 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
           </View>
         </View>
       </View>
-    </Pressable>
+    </TrailCardBoundary>
   );
 }
 
