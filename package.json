@@ -3,7 +3,7 @@
   "description": "Reference Expo app for local stim-cli iOS and Android testing",
   "license": "MIT",
   "repository": "https://github.com/appandflow/trailhead",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",

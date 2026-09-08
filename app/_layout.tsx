@@ -10,8 +10,6 @@ import { initializeDatabase } from '@/src/db/client';
 import { seedHikesIfEmpty } from '@/src/db/seed';
 import { useTheme } from '@/src/theme';
 
-if (__DEV__) console.info('[stim:readiness] pending');
-
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient({
