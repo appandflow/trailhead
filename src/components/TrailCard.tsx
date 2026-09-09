@@ -12,7 +12,7 @@ import { radius, spacing, useTheme, type Palette } from '@/src/theme';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-// Keep the existing native accessibility behavior while registering card bounds.
+// Keep the whole row accessible while measuring its thumbnail for the transition.
 const TrailCardBoundary = Transition.createBoundaryComponent(Pressable);
 
 export function difficultyColor(difficulty: Difficulty, colors: Palette): string {
@@ -47,6 +47,7 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
   return (
     <TrailCardBoundary
       id={`trail-${trail.id}`}
+      escapeClipping
       onPress={() => router.push({ pathname: '/trail/[id]', params: { id: trail.id } })}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
@@ -57,13 +58,17 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
         { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.9 : 1 },
       ]}
     >
-      <Image
-        source={{ uri: trailPhotoUrl(trail, 320) }}
-        style={[styles.photo, { backgroundColor: colors.surfaceAlt }]}
-        contentFit="cover"
-        transition={150}
-        accessibilityIgnoresInvertColors
-      />
+      <Transition.Boundary.Target
+        style={{ width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceAlt }}
+      >
+        <Image
+          source={{ uri: trailPhotoUrl(trail, 320) }}
+          style={{ width: '100%', height: '100%' }}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          accessibilityIgnoresInvertColors
+        />
+      </Transition.Boundary.Target>
       <View style={styles.body}>
         <Text numberOfLines={1} style={[styles.name, { color: colors.text }]}>
           {trail.name}
@@ -122,7 +127,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
   },
-  photo: { width: 92, height: 92, borderRadius: radius.md },
   body: { flex: 1, justifyContent: 'space-between' },
   name: { fontSize: 16, fontWeight: '600' },
   region: { fontSize: 13, marginTop: 2 },

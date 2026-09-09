@@ -1,11 +1,12 @@
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, type ComponentProps, type ComponentType } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
-import Transition, { withScreenTransitions, type ScreenTransitionConfig } from 'react-native-screen-transitions';
+import Transition, { withScreenTransitions, type NativeStackAdapterOptions, type ScreenTransitionConfig } from 'react-native-screen-transitions';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { initializeDatabase } from '@/src/db/client';
@@ -25,14 +26,24 @@ const TransitionStack = withScreenTransitions({
   Group: Fragment,
 }).Navigator;
 
+type RouterScreenProps = ComponentProps<typeof Stack.Screen>;
+type RouterScreenOptionsCallback = Extract<RouterScreenProps['options'], (...args: never[]) => unknown>;
+type TransitionScreenOptions = NativeStackAdapterOptions<ReturnType<RouterScreenOptionsCallback>>;
+
+// The adapter accepts gesture directions beyond Expo Router's native-stack types.
+const TransitionScreen = Stack.Screen as ComponentType<Omit<RouterScreenProps, 'options'> & {
+  options?: TransitionScreenOptions | ((props: Parameters<RouterScreenOptionsCallback>[0]) => TransitionScreenOptions);
+}>;
+
 function trailTransition(id: string) {
   return {
+    navigationMaskEnabled: Platform.OS === 'ios',
     gestureEnabled: true,
-    gestureDirection: 'horizontal',
+    gestureDirection: ['horizontal', 'horizontal-inverted', 'vertical'],
     transitionSpec: Transition.Specs.Zoom,
     screenStyleInterpolator: ({ bounds }) => {
       'worklet';
-      return bounds(`trail-${id}`).navigation.zoom({ target: 'fullscreen', borderRadius: 0 });
+      return bounds(`trail-${id}`).navigation.zoom({ target: 'bound', borderRadius: 48 });
     },
   } satisfies ScreenTransitionConfig;
 }
@@ -73,13 +84,15 @@ export default function RootLayout() {
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
+            <TransitionScreen
               name="trail/[id]"
               options={({ route }) => {
                 const id = (route.params as { id?: string } | undefined)?.id;
                 return {
                   title: 'Trail',
                   headerShown: false,
+                  // Keep the list visible behind the library's animated content and backdrop.
+                  contentStyle: { backgroundColor: 'transparent' },
                   ...(id && !reducedMotion
                     ? { ...trailTransition(id), enableTransitions: true }
                     : { animation: 'none' as const }),
