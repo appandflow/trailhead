@@ -49,7 +49,15 @@ export default function RootLayout() {
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    SplashScreen.hideAsync().catch(() => {});
+    let active = true;
+    SplashScreen.hideAsync()
+      .then(() => {
+        if (active && __DEV__) console.info('[stim:readiness] ready');
+      })
+      .catch(console.error);
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
