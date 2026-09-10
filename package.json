@@ -1,6 +1,6 @@
 {
   "name": "trailhead",
-  "description": "Reference Expo app for local stim-cli iOS and Android testing",
+  "description": "Reference Expo app for local stim iOS and Android testing",
   "license": "MIT",
   "repository": "https://github.com/appandflow/trailhead",
   "main": "index.js",
@@ -76,6 +76,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~57.0.2",
+    "stim": "1.0.0",
     "typescript": "~6.0.3"
   },
   "expo": {
