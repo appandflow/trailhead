@@ -1,6 +1,6 @@
 {
   "name": "trailhead",
-  "description": "Reference Expo app for local stim-cli iOS and Android testing",
+  "description": "Reference Expo app for local stim iOS and Android testing",
   "license": "MIT",
   "repository": "https://github.com/appandflow/trailhead",
   "main": "index.js",
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-masked-view/masked-view": "0.3.2",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
@@ -61,6 +62,7 @@
     "react-native-nitro-modules": "^0.36.5",
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
+    "react-native-screen-transitions": "4.0.0",
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
     "react-native-web": "^0.21.2",
@@ -74,6 +76,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~57.0.2",
+    "stim": "1.0.0",
     "typescript": "~6.0.3"
   },
   "expo": {

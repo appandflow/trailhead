@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Transition from 'react-native-screen-transitions';
 
 import { trailPhotoUrl, type Difficulty, type Trail } from '@/src/data/trails';
 import { formatDistance, formatDuration, formatElevation } from '@/src/lib/format';
@@ -9,6 +11,9 @@ import { useSettingsStore } from '@/src/store/settingsStore';
 import { radius, spacing, useTheme, type Palette } from '@/src/theme';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+// Keep the whole row accessible while measuring its thumbnail for the transition.
+const TrailCardBoundary = Transition.createBoundaryComponent(Pressable);
 
 export function difficultyColor(difficulty: Difficulty, colors: Palette): string {
   switch (difficulty) {
@@ -37,24 +42,33 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
   const router = useRouter();
   const units = useSettingsStore((s) => s.units);
   const accent = difficultyColor(trail.difficulty, colors);
+  const [pressed, setPressed] = useState(false);
 
   return (
-    <Pressable
+    <TrailCardBoundary
+      id={`trail-${trail.id}`}
+      escapeClipping
       onPress={() => router.push({ pathname: '/trail/[id]', params: { id: trail.id } })}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       accessibilityRole="button"
       accessibilityLabel={`${trail.name}, ${trail.region}, ${difficultyLabel(trail.difficulty)}, rated ${trail.rating.toFixed(1)} out of 5`}
-      style={({ pressed }) => [
+      style={[
         styles.card,
         { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.9 : 1 },
       ]}
     >
-      <Image
-        source={{ uri: trailPhotoUrl(trail, 320) }}
-        style={[styles.photo, { backgroundColor: colors.surfaceAlt }]}
-        contentFit="cover"
-        transition={150}
-        accessibilityIgnoresInvertColors
-      />
+      <Transition.Boundary.Target
+        style={{ width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceAlt }}
+      >
+        <Image
+          source={{ uri: trailPhotoUrl(trail, 320) }}
+          style={{ width: '100%', height: '100%' }}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          accessibilityIgnoresInvertColors
+        />
+      </Transition.Boundary.Target>
       <View style={styles.body}>
         <Text numberOfLines={1} style={[styles.name, { color: colors.text }]}>
           {trail.name}
@@ -88,7 +102,7 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
           </View>
         </View>
       </View>
-    </Pressable>
+    </TrailCardBoundary>
   );
 }
 
@@ -113,7 +127,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
   },
-  photo: { width: 92, height: 92, borderRadius: radius.md },
   body: { flex: 1, justifyContent: 'space-between' },
   name: { fontSize: 16, fontWeight: '600' },
   region: { fontSize: 13, marginTop: 2 },
