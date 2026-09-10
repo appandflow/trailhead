@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { MenuView } from "@expo/ui/community/menu";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import { useRef, useState } from "react";
 import {
   Keyboard,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -27,6 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { FilterSheet } from "@/src/components/FilterSheet";
+import { AndroidSortMenu } from "@/src/components/AndroidSortMenu";
 import { radius, spacing, useTheme } from "@/src/theme";
 
 const CONTROL_TRANSITION = LinearTransition.duration(280).easing(
@@ -60,6 +62,7 @@ const SEARCH_BACK_OUT = new Keyframe({
 }).duration(140);
 const MAX_CONTROL_FONT_SCALE = 1.5;
 export const SEARCH_FILTER_CONTROLS_HEIGHT = 48 + spacing.md;
+const SortMenu = Platform.OS === "android" ? AndroidSortMenu : MenuView;
 
 export interface SearchFilterControlsProps<Sort extends string> {
   query: string;
@@ -81,6 +84,8 @@ export interface SearchFilterControlsProps<Sort extends string> {
   /** Optional scroll-driven translation; the parent owns its scroll handler. */
   translateY?: SharedValue<number>;
   interactive?: boolean;
+  /** Background sampled by the Android frosted sort menu; unused on iOS. */
+  blurTarget?: RefObject<View | null>;
 }
 
 /** Controlled values stay with the caller; transient menu and focus state stay here. */
@@ -98,6 +103,7 @@ export function SearchFilterControls<Sort extends string>({
   accessibilityLabels = {},
   translateY,
   interactive = true,
+  blurTarget,
 }: SearchFilterControlsProps<Sort>) {
   const { colors } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -264,7 +270,8 @@ export function SearchFilterControls<Sort extends string>({
                 layout={CONTROL_TRANSITION}
                 style={{ flex: 1, minWidth: 0 }}
               >
-                <MenuView
+                <SortMenu
+                  {...(Platform.OS === "android" ? { blurTarget } : {})}
                   actions={sortOptions.map((option) => ({
                     id: option.key,
                     title: option.label,
@@ -320,7 +327,7 @@ export function SearchFilterControls<Sort extends string>({
                       color={colors.textMuted}
                     />
                   </View>
-                </MenuView>
+                </SortMenu>
               </Animated.View>
             ) : null}
             {searchOpen ? (

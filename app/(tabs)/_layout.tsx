@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'react-native';
+import { Image, Platform } from 'react-native';
 import { useTheme } from '@/src/theme';
 
 export default function TabsLayout() {
@@ -20,6 +20,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Trails',
+          headerTitleAlign: Platform.OS === 'android' ? 'center' : undefined,
           headerShadowVisible: false,
           headerTitle: () => (
             <Image

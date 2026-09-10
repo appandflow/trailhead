@@ -3,13 +3,14 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import {
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   Extrapolation,
@@ -32,6 +33,8 @@ import { radius, spacing, useTheme } from "@/src/theme";
 const SHEET_IN = SlideInDown.duration(300).easing(Easing.out(Easing.cubic));
 const SHEET_OUT = SlideOutDown.duration(220).easing(Easing.in(Easing.cubic));
 const MAX_CONTROL_FONT_SCALE = 1.5;
+const IS_ANDROID = Platform.OS === "android";
+const SheetRoot = IS_ANDROID ? GestureHandlerRootView : View;
 
 export function FilterSheet({
   title,
@@ -47,7 +50,7 @@ export function FilterSheet({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = useWindowDimensions();
-  const dragOffset = useSharedValue(0);
+  const dragOffset = useSharedValue(IS_ANDROID ? screenHeight : 0);
   const scrollOffset = useSharedValue(0);
   const [footerHeight, setFooterHeight] = useState(0);
   const sheetHeight = Math.min(
@@ -103,10 +106,18 @@ export function FilterSheet({
       visible
       transparent
       statusBarTranslucent
+      navigationBarTranslucent={IS_ANDROID ? true : undefined}
       animationType="none"
+      onShow={IS_ANDROID ? () => {
+        // Wait for Android's native modal, then animate without fixing its origin.
+        dragOffset.set(withTiming(0, {
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+        }));
+      } : undefined}
       onRequestClose={dismissSheet}
     >
-      <View style={{ flex: 1, justifyContent: "flex-end" }}>
+      <SheetRoot style={{ flex: 1, justifyContent: "flex-end" }}>
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(160)}
@@ -132,8 +143,8 @@ export function FilterSheet({
           />
         </Animated.View>
         <Animated.View
-          entering={SHEET_IN}
-          exiting={SHEET_OUT}
+          entering={IS_ANDROID ? undefined : SHEET_IN}
+          exiting={IS_ANDROID ? undefined : SHEET_OUT}
           style={[{ position: "absolute", bottom: 0, left: 0, right: 0 }, { height: sheetHeight }]}
         >
           <Animated.View
@@ -229,7 +240,7 @@ export function FilterSheet({
             </View>
           </Animated.View>
         </Animated.View>
-      </View>
+      </SheetRoot>
     </Modal>
   );
 }

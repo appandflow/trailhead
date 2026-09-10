@@ -1,6 +1,7 @@
 import { FlashList } from "@shopify/flash-list";
-import { useState } from "react";
-import { View } from "react-native";
+import { BlurTargetView } from "expo-blur";
+import { useRef, useState } from "react";
+import { Platform, View } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { EmptyState } from "@/src/components/EmptyState";
@@ -33,6 +34,7 @@ interface TrailRow {
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<TrailRow>);
 
 export default function TrailsScreen() {
+  const blurTargetRef = useRef<View>(null);
   const [query, setQuery] = useState("");
   const [region, setRegion] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -80,9 +82,46 @@ export default function TrailsScreen() {
     setDifficulty(null);
   };
 
+  const trailList = (
+    <AnimatedFlashList
+      data={visible}
+      keyExtractor={(row) => row.trail.id}
+      renderItem={({ item }) => (
+        <TrailCard trail={item.trail} distanceMeters={item.distanceMeters} />
+      )}
+      contentContainerStyle={{
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.lg,
+        paddingTop: SEARCH_FILTER_CONTROLS_HEIGHT + spacing.lg,
+      }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+      ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
+      ListEmptyComponent={
+        <EmptyState
+          icon="trail-sign-outline"
+          title="No trails found"
+          description="Nothing matches the current search and filters."
+          action={
+            filtered
+              ? {
+                  label: "Clear filters",
+                  accessibilityLabel: "Clear search and filters",
+                  onPress: clearFilters,
+                }
+              : undefined
+          }
+        />
+      }
+    />
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <SearchFilterControls
+        blurTarget={Platform.OS === "android" ? blurTargetRef : undefined}
         query={query}
         onQueryChange={setQuery}
         sort={sort}
@@ -136,39 +175,11 @@ export default function TrailsScreen() {
         </FilterSection>
       </SearchFilterControls>
 
-      <AnimatedFlashList
-        data={visible}
-        keyExtractor={(row) => row.trail.id}
-        renderItem={({ item }) => (
-          <TrailCard trail={item.trail} distanceMeters={item.distanceMeters} />
-        )}
-        contentContainerStyle={{
-          paddingHorizontal: spacing.lg,
-          paddingBottom: spacing.lg,
-          paddingTop: SEARCH_FILTER_CONTROLS_HEIGHT + spacing.lg,
-        }}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
-        ListEmptyComponent={
-          <EmptyState
-            icon="trail-sign-outline"
-            title="No trails found"
-            description="Nothing matches the current search and filters."
-            action={
-              filtered
-                ? {
-                    label: "Clear filters",
-                    accessibilityLabel: "Clear search and filters",
-                    onPress: clearFilters,
-                  }
-                : undefined
-            }
-          />
-        }
-      />
+      {Platform.OS === "android" ? (
+        <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
+          {trailList}
+        </BlurTargetView>
+      ) : trailList}
     </View>
   );
 }
