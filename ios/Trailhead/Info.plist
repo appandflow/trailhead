@@ -52,11 +52,11 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Trailhead uses your location to record hikes.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your location</string>
+	<string>Trailhead uses your location in the background to keep recording your hike when the app is not open.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Trailhead uses your location to record hikes.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to detect your current motion activity</string>
+	<string>Trailhead uses motion activity to improve hike tracking while you record.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
