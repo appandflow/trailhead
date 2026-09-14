@@ -30,6 +30,9 @@ export default function SettingsScreen() {
   const { units, hikeReminders, offlineMaps, setUnits, setHikeReminders, setOfflineMaps } =
     useSettingsStore();
   const { data: count, isPending: countPending } = useHikeCount();
+  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const buildVersion =
+    Constants.platform?.ios?.buildNumber ?? Constants.platform?.android?.versionCode;
 
   const reset = useMutation({
     mutationFn: async () => {
@@ -152,7 +155,7 @@ export default function SettingsScreen() {
         <View style={styles.rowInner}>
           <RowLabel icon="information-circle-outline" title="Version" />
           <Text style={[styles.value, { color: colors.textMuted }]}>
-            {Constants.expoConfig?.version ?? '1.0.0'}
+            {buildVersion ? `${version} (${buildVersion})` : version}
           </Text>
         </View>
       </Section>
