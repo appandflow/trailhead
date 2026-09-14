@@ -47,6 +47,7 @@ export default function TrailDetailScreen() {
         style={[styles.hero, { backgroundColor: colors.surfaceAlt }]}
         contentFit="cover"
         transition={200}
+        accessibilityLabel={`Photo of ${trail.name}`}
         accessibilityIgnoresInvertColors
       />
 
