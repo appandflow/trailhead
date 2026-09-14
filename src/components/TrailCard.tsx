@@ -37,12 +37,15 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
   const router = useRouter();
   const units = useSettingsStore((s) => s.units);
   const accent = difficultyColor(trail.difficulty, colors);
+  const distance = formatDistance(distanceMeters, units);
+  const ascent = formatElevation(trail.elevationGainM, units);
+  const duration = formatDuration(trail.estimatedMinutes * 60);
 
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/trail/[id]', params: { id: trail.id } })}
       accessibilityRole="button"
-      accessibilityLabel={`${trail.name}, ${trail.region}, ${difficultyLabel(trail.difficulty)}, rated ${trail.rating.toFixed(1)} out of 5`}
+      accessibilityLabel={`${trail.name}, ${trail.region}, ${difficultyLabel(trail.difficulty)}, rated ${trail.rating.toFixed(1)} out of 5, ${distance}, ${ascent} of ascent, estimated duration ${duration}`}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.9 : 1 },
@@ -64,17 +67,9 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
         </Text>
 
         <View style={styles.stats}>
-          <Stat icon="walk-outline" value={formatDistance(distanceMeters, units)} color={colors.textMuted} />
-          <Stat
-            icon="trending-up-outline"
-            value={formatElevation(trail.elevationGainM, units)}
-            color={colors.textMuted}
-          />
-          <Stat
-            icon="time-outline"
-            value={formatDuration(trail.estimatedMinutes * 60)}
-            color={colors.textMuted}
-          />
+          <Stat icon="walk-outline" value={distance} color={colors.textMuted} />
+          <Stat icon="trending-up-outline" value={ascent} color={colors.textMuted} />
+          <Stat icon="time-outline" value={duration} color={colors.textMuted} />
         </View>
 
         <View style={styles.footer}>
