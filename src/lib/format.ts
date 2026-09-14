@@ -28,7 +28,8 @@ export function formatDuration(seconds: number): string {
 export function formatPace(seconds: number, meters: number, unit: DistanceUnit = 'metric'): string {
   if (meters <= 0) return '--';
   const perUnit = unit === 'imperial' ? (seconds / (meters / 1000 / KM_PER_MILE)) : seconds / (meters / 1000);
-  const m = Math.floor(perUnit / 60);
-  const s = Math.round(perUnit % 60);
+  const rounded = Math.round(perUnit);
+  const m = Math.floor(rounded / 60);
+  const s = rounded % 60;
   return `${m}:${String(s).padStart(2, '0')} /${unit === 'imperial' ? 'mi' : 'km'}`;
 }
