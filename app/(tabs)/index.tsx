@@ -171,6 +171,7 @@ export default function TrailsScreen() {
               <Pressable
                 onPress={clearFilters}
                 accessibilityRole="button"
+                accessibilityLabel="Clear all trail filters"
                 style={[styles.emptyAction, { borderColor: colors.border }]}
               >
                 <Text style={[styles.emptyActionLabel, { color: colors.primary }]}>
