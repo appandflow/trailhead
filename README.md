@@ -46,7 +46,8 @@ Android builds do not require secrets. To show Android map tiles, copy
 `.env.example` to `.env` and add a Google Maps API key.
 
 For direct Expo checks, use `npx expo run:ios` or `npx expo run:android`.
-Trailhead has no EAS build or simulator configuration.
+EAS development profiles live in `eas.json`; using them needs membership of
+the `appandflow` Expo account.
 
 The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run direct CocoaPods
 commands through Bundler, for example `cd ios && bundle exec pod install`.
