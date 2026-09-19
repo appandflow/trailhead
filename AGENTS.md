@@ -54,8 +54,12 @@ npx expo run:ios       # or: npx expo run:android
 The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run CocoaPods commands
 through Bundler, for example `cd ios && bundle exec pod install`.
 
-This public test app does not contain EAS configuration. Use only local builds
-and simulator sessions.
+`eas.json` carries two development profiles: `development` (Android emulator,
+iOS device) and `development-simulator` (iOS simulator). EAS builds and EAS
+Simulator sessions need membership of the `appandflow` Expo account, so they
+cost nothing to a reader of this repository; local builds need no account.
+With Stim: `stim ios --eas-profile development-simulator`, or from a host
+without Xcode, `stim ios --remote eas --eas-profile development-simulator`.
 
 Note that `-derivedDataPath ios/build` collides with React Native's codegen output
 in `ios/build/generated`. Use a derived data path outside `ios/build`, and re-run
