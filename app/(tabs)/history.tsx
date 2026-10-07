@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,18 +7,23 @@ import {
   Text,
   View,
   type LayoutChangeEvent,
-} from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Canvas, RoundedRect } from '@shopify/react-native-skia';
-import { format, startOfMonth, subMonths } from 'date-fns';
+} from "react-native";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Canvas, RoundedRect } from "@shopify/react-native-skia";
+import { format, startOfMonth, subMonths } from "date-fns";
 
-import { StatCard } from '@/src/components/StatCard';
-import type { Hike } from '@/src/db/schema';
-import { groupHikesByMonth, useHikes } from '@/src/features/history/useHikes';
-import { formatDistance, formatDuration, formatElevation } from '@/src/lib/format';
-import { useSettingsStore } from '@/src/store/settingsStore';
-import { radius, spacing, useTheme } from '@/src/theme';
+import { StatCard } from "@/src/components/StatCard";
+import type { Hike } from "@/src/db/schema";
+import { YearHeatmap } from "@/src/features/history/YearHeatmap";
+import { groupHikesByMonth, useHikes } from "@/src/features/history/useHikes";
+import {
+  formatDistance,
+  formatDuration,
+  formatElevation,
+} from "@/src/lib/format";
+import { useSettingsStore } from "@/src/store/settingsStore";
+import { radius, spacing, useTheme } from "@/src/theme";
 
 const CHART_MONTHS = 6;
 const CHART_HEIGHT = 96;
@@ -37,7 +42,10 @@ export default function HistoryScreen() {
 
   const sections = useMemo(() => groupHikesByMonth(data ?? []), [data]);
   const totals = useMemo(() => lifetimeTotals(data ?? []), [data]);
-  const monthly = useMemo(() => monthlyDistance(data ?? [], CHART_MONTHS), [data]);
+  const monthly = useMemo(
+    () => monthlyDistance(data ?? [], CHART_MONTHS),
+    [data],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: Hike }) => <HikeRow hike={item} />,
@@ -56,13 +64,17 @@ export default function HistoryScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Ionicons name="alert-circle-outline" size={40} color={colors.danger} />
-        <Text style={[styles.emptyTitle, { color: colors.text }]}>Could not load your hikes</Text>
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>
+          Could not load your hikes
+        </Text>
         <Pressable
           accessibilityRole="button"
           onPress={() => refetch()}
           style={[styles.retryButton, { backgroundColor: colors.primary }]}
         >
-          <Text style={[styles.retryLabel, { color: colors.textInverse }]}>Try again</Text>
+          <Text style={[styles.retryLabel, { color: colors.textInverse }]}>
+            Try again
+          </Text>
         </Pressable>
       </View>
     );
@@ -82,12 +94,23 @@ export default function HistoryScreen() {
         sections.length === 0 && styles.emptyContent,
       ]}
       ListHeaderComponent={
-        sections.length > 0 ? <SummaryHeader totals={totals} monthly={monthly} /> : null
+        sections.length > 0 ? (
+          <View>
+            <SummaryHeader totals={totals} monthly={monthly} />
+            <View style={styles.heatmap}>
+              <YearHeatmap hikes={data ?? []} />
+            </View>
+          </View>
+        ) : null
       }
       ListEmptyComponent={<EmptyState />}
       renderSectionHeader={({ section }) => (
-        <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
+        <View
+          style={[styles.sectionHeader, { backgroundColor: colors.background }]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {section.title}
+          </Text>
           <Text style={[styles.sectionMeta, { color: colors.textMuted }]}>
             {formatDistance(
               section.data.reduce((sum, hike) => sum + hike.distanceMeters, 0),
@@ -100,17 +123,29 @@ export default function HistoryScreen() {
   );
 }
 
-function SummaryHeader({ totals, monthly }: { totals: LifetimeTotals; monthly: MonthTotal[] }) {
+function SummaryHeader({
+  totals,
+  monthly,
+}: {
+  totals: LifetimeTotals;
+  monthly: MonthTotal[];
+}) {
   const { colors } = useTheme();
   const units = useSettingsStore((s) => s.units);
   const [chartWidth, setChartWidth] = useState(0);
 
-  const onLayout = (event: LayoutChangeEvent) => setChartWidth(event.nativeEvent.layout.width);
+  const onLayout = (event: LayoutChangeEvent) =>
+    setChartWidth(event.nativeEvent.layout.width);
 
   return (
     <View style={styles.header}>
       <View style={styles.statRow}>
-        <StatCard label="Hikes" value={String(totals.count)} icon="footsteps-outline" accent />
+        <StatCard
+          label="Hikes"
+          value={String(totals.count)}
+          icon="footsteps-outline"
+          accent
+        />
         <StatCard
           label="Distance"
           value={formatDistance(totals.distanceMeters, units)}
@@ -123,14 +158,26 @@ function SummaryHeader({ totals, monthly }: { totals: LifetimeTotals; monthly: M
         />
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.text }]}>Distance per month</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: colors.text }]}>
+          Distance per month
+        </Text>
         <View onLayout={onLayout}>
-          {chartWidth > 0 ? <MonthlyBars data={monthly} width={chartWidth} /> : null}
+          {chartWidth > 0 ? (
+            <MonthlyBars data={monthly} width={chartWidth} />
+          ) : null}
         </View>
         <View style={styles.axis}>
           {monthly.map((month) => (
-            <Text key={month.key} style={[styles.axisLabel, { color: colors.textMuted }]}>
+            <Text
+              key={month.key}
+              style={[styles.axisLabel, { color: colors.textMuted }]}
+            >
               {month.label}
             </Text>
           ))}
@@ -147,7 +194,10 @@ function MonthlyBars({ data, width }: { data: MonthTotal[]; width: number }) {
   const peak = Math.max(...data.map((month) => month.meters), 1);
   const slot = width / data.length;
   const barWidth = Math.max(slot - spacing.md, 8);
-  const busiest = data.reduce((best, month) => (month.meters > best.meters ? month : best), data[0]);
+  const busiest = data.reduce(
+    (best, month) => (month.meters > best.meters ? month : best),
+    data[0],
+  );
 
   return (
     <View
@@ -179,7 +229,7 @@ function MonthlyBars({ data, width }: { data: MonthTotal[]; width: number }) {
 function HikeRow({ hike }: { hike: Hike }) {
   const { colors } = useTheme();
   const units = useSettingsStore((s) => s.units);
-  const date = format(new Date(hike.startedAt), 'EEE, MMM d');
+  const date = format(new Date(hike.startedAt), "EEE, MMM d");
   const distance = formatDistance(hike.distanceMeters, units);
   const duration = formatDuration(hike.durationSeconds);
   const ascent = formatElevation(hike.elevationGainMeters, units);
@@ -198,10 +248,15 @@ function HikeRow({ hike }: { hike: Hike }) {
       ]}
     >
       <View style={styles.rowBody}>
-        <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.rowTitle, { color: colors.text }]}
+          numberOfLines={1}
+        >
           {hike.title}
         </Text>
-        <Text style={[styles.rowDate, { color: colors.textMuted }]}>{date}</Text>
+        <Text style={[styles.rowDate, { color: colors.textMuted }]}>
+          {date}
+        </Text>
         <View style={styles.rowStats}>
           <RowStat icon="trail-sign-outline" value={distance} />
           <RowStat icon="time-outline" value={duration} />
@@ -213,12 +268,20 @@ function HikeRow({ hike }: { hike: Hike }) {
   );
 }
 
-function RowStat({ icon, value }: { icon: keyof typeof Ionicons.glyphMap; value: string }) {
+function RowStat({
+  icon,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  value: string;
+}) {
   const { colors } = useTheme();
   return (
     <View style={styles.rowStat}>
       <Ionicons name={icon} size={13} color={colors.textMuted} />
-      <Text style={[styles.rowStatText, { color: colors.textMuted }]}>{value}</Text>
+      <Text style={[styles.rowStatText, { color: colors.textMuted }]}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -228,16 +291,20 @@ function EmptyState() {
   return (
     <View style={styles.empty}>
       <Ionicons name="map-outline" size={44} color={colors.textMuted} />
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>No hikes yet</Text>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>
+        No hikes yet
+      </Text>
       <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
         Recorded hikes show up here, grouped by month.
       </Text>
       <Pressable
         accessibilityRole="button"
-        onPress={() => router.push('/record')}
+        onPress={() => router.push("/record")}
         style={[styles.retryButton, { backgroundColor: colors.primary }]}
       >
-        <Text style={[styles.retryLabel, { color: colors.textInverse }]}>Record a hike</Text>
+        <Text style={[styles.retryLabel, { color: colors.textInverse }]}>
+          Record a hike
+        </Text>
       </Pressable>
     </View>
   );
@@ -254,7 +321,8 @@ function lifetimeTotals(list: Hike[]): LifetimeTotals {
     (totals, hike) => ({
       count: totals.count + 1,
       distanceMeters: totals.distanceMeters + hike.distanceMeters,
-      elevationGainMeters: totals.elevationGainMeters + hike.elevationGainMeters,
+      elevationGainMeters:
+        totals.elevationGainMeters + hike.elevationGainMeters,
     }),
     { count: 0, distanceMeters: 0, elevationGainMeters: 0 },
   );
@@ -265,12 +333,16 @@ function monthlyDistance(list: Hike[], monthCount: number): MonthTotal[] {
   const buckets: MonthTotal[] = [];
   for (let i = monthCount - 1; i >= 0; i--) {
     const month = subMonths(thisMonth, i);
-    buckets.push({ key: format(month, 'yyyy-MM'), label: format(month, 'MMM'), meters: 0 });
+    buckets.push({
+      key: format(month, "yyyy-MM"),
+      label: format(month, "MMM"),
+      meters: 0,
+    });
   }
 
   const byKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
   for (const hike of list) {
-    const bucket = byKey.get(format(new Date(hike.startedAt), 'yyyy-MM'));
+    const bucket = byKey.get(format(new Date(hike.startedAt), "yyyy-MM"));
     if (bucket) bucket.meters += hike.distanceMeters;
   }
   return buckets;
@@ -279,31 +351,37 @@ function monthlyDistance(list: Hike[], monthCount: number): MonthTotal[] {
 const styles = StyleSheet.create({
   content: { paddingBottom: spacing.xxl },
   emptyContent: { flexGrow: 1 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+  },
   header: { padding: spacing.lg, gap: spacing.lg },
-  statRow: { flexDirection: 'row', gap: spacing.sm },
+  heatmap: { paddingHorizontal: spacing.lg },
+  statRow: { flexDirection: "row", gap: spacing.sm },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.lg,
     padding: spacing.lg,
     gap: spacing.md,
   },
-  cardTitle: { fontSize: 15, fontWeight: '700' },
-  axis: { flexDirection: 'row' },
-  axisLabel: { flex: 1, fontSize: 11, textAlign: 'center' },
+  cardTitle: { fontSize: 15, fontWeight: "700" },
+  axis: { flexDirection: "row" },
+  axisLabel: { flex: 1, fontSize: 11, textAlign: "center" },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
-  sectionTitle: { fontSize: 17, fontWeight: '700' },
-  sectionMeta: { fontSize: 13, fontWeight: '600' },
+  sectionTitle: { fontSize: 17, fontWeight: "700" },
+  sectionMeta: { fontSize: 13, fontWeight: "600" },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.sm,
@@ -312,25 +390,25 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   rowBody: { flex: 1, gap: spacing.xs },
-  rowTitle: { fontSize: 16, fontWeight: '600' },
+  rowTitle: { fontSize: 16, fontWeight: "600" },
   rowDate: { fontSize: 13 },
-  rowStats: { flexDirection: 'row', gap: spacing.lg, marginTop: spacing.xs },
-  rowStat: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  rowStats: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.xs },
+  rowStat: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
   rowStatText: { fontSize: 13 },
   empty: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: spacing.xl,
     gap: spacing.sm,
   },
-  emptyTitle: { fontSize: 18, fontWeight: '700' },
-  emptyBody: { fontSize: 14, textAlign: 'center' },
+  emptyTitle: { fontSize: 18, fontWeight: "700" },
+  emptyBody: { fontSize: 14, textAlign: "center" },
   retryButton: {
     marginTop: spacing.md,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderRadius: radius.pill,
   },
-  retryLabel: { fontSize: 15, fontWeight: '600' },
+  retryLabel: { fontSize: 15, fontWeight: "600" },
 });
