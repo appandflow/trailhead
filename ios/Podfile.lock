@@ -214,6 +214,10 @@ PODS:
   - ExpoTaskManager (58.0.4):
     - ExpoModulesCore
     - UMAppLoader
+  - ExpoUI (58.0.3):
+    - ExpoModulesCore
+    - ExpoModulesWorklets
+    - React-RCTFabric
   - ExpoVideo (58.0.1):
     - ExpoModulesCore
   - ExpoWebBrowser (58.0.0):
@@ -2570,6 +2574,7 @@ DEPENDENCIES:
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
   - ExpoTaskManager (from `../node_modules/expo-task-manager/ios`)
+  - "ExpoUI (from `../node_modules/@expo/ui/ios/ExpoUI.podspec`)"
   - ExpoVideo (from `../node_modules/expo-video/ios/ExpoVideo.podspec`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
@@ -2759,6 +2764,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-system-ui/ios"
   ExpoTaskManager:
     :path: "../node_modules/expo-task-manager/ios"
+  ExpoUI:
+    :podspec: "../node_modules/@expo/ui/ios/ExpoUI.podspec"
   ExpoVideo:
     :podspec: "../node_modules/expo-video/ios/ExpoVideo.podspec"
   ExpoWebBrowser:
@@ -3004,6 +3011,7 @@ SPEC CHECKSUMS:
   ExpoSymbols: 54e717ad0bbc01c1760c7e89aeef691477e9eb0c
   ExpoSystemUI: 45f67a7fa85173c428e487e9e57da6d3fe11a0d8
   ExpoTaskManager: 55b63782b8111ebc51d490428cabd5918342deeb
+  ExpoUI: 57a1ada9dbcefe27e394d97097e06fc9061ff594
   ExpoVideo: 3cedcb72dd5110def73469149046cd09c8be8860
   ExpoWebBrowser: 68251c42a3cc5ca41d7299b3de477ed19c526e01
   EXUpdatesInterface: e3e64a7854cc0fc05b3053ba447ea12871acfe19
