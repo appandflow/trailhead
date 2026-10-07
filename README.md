@@ -1,6 +1,6 @@
 # Trailhead
 
-A reusable Expo app for testing local `stim-cli` iOS and Android workflows.
+A reusable Expo app for testing local `stim` iOS and Android workflows.
 
 Browse a catalogue of 200 trails with route maps and elevation profiles, record a
 hike with live GPS tracking, and review your history with per-month stats and
@@ -35,12 +35,14 @@ The native projects are committed; `expo prebuild` is not part of the build.
 ```bash
 npm ci
 bundle install
-npx --package=stim-cli stim doctor
-npx --package=stim-cli stim start
-npx --package=stim-cli stim ios       # or: npx --package=stim-cli stim android
-npx --package=stim-cli stim logs --errors
-npx --package=stim-cli stim stop
+stim doctor
+stim start
+stim ios       # or: stim android
+stim logs --errors
+stim stop
 ```
+
+Install Stim with `npm install --global stim`, or replace `stim` with `npx stim`.
 
 Android builds do not require secrets. To show Android map tiles, copy
 `.env.example` to `.env` and add a Google Maps API key.
