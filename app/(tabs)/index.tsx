@@ -1,6 +1,6 @@
 import { FlashList } from "@shopify/flash-list";
 import { BlurTargetView } from "expo-blur";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Platform, View } from "react-native";
 import Animated from "react-native-reanimated";
 
@@ -12,8 +12,17 @@ import {
 } from "@/src/components/SearchFilterControls";
 import { TrailCard, difficultyLabel } from "@/src/components/TrailCard";
 import { regions, trails, type Difficulty, type Trail } from "@/src/data/trails";
+import {
+  EMPTY_RANGE,
+  RangeFilters,
+  ascentInputToMeters,
+  distanceInputToMeters,
+  inRange,
+  type RangeValue,
+} from "@/src/components/RangeFilters";
 import { useScrollVisibility } from "@/src/hooks/useScrollVisibility";
 import { routeDistanceMeters } from "@/src/lib/geo";
+import { useSettingsStore } from "@/src/store/settingsStore";
 import { spacing } from "@/src/theme";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "moderate", "hard", "expert"];
@@ -39,6 +48,9 @@ export default function TrailsScreen() {
   const [region, setRegion] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [sort, setSort] = useState<SortKey>("name");
+  const [distanceRange, setDistanceRange] = useState<RangeValue>(EMPTY_RANGE);
+  const [ascentRange, setAscentRange] = useState<RangeValue>(EMPTY_RANGE);
+  const units = useSettingsStore().units;
   const {
     onScroll: handleScroll,
     translateY: controlsTranslateY,
@@ -49,13 +61,32 @@ export default function TrailsScreen() {
 
   const needle = query.trim().toLowerCase();
 
-  const rows: TrailRow[] = trails.map((trail) => ({
-    trail,
-    distanceMeters: routeDistanceMeters(trail.route),
-  }));
+  const rows = useMemo<TrailRow[]>(
+    () =>
+      trails.map((trail) => ({
+        trail,
+        distanceMeters: routeDistanceMeters(trail.route),
+      })),
+    [],
+  );
+  const bounds = useMemo(() => {
+    const d = rows.map((r) => r.distanceMeters);
+    const a = rows.map((r) => r.trail.elevationGainM);
+    return {
+      distanceM: [Math.min(...d), Math.max(...d)] as [number, number],
+      ascentM: [Math.min(...a), Math.max(...a)] as [number, number],
+    };
+  }, [rows]);
+
+  const distMin = distanceInputToMeters(distanceRange.min, units);
+  const distMax = distanceInputToMeters(distanceRange.max, units);
+  const ascMin = ascentInputToMeters(ascentRange.min, units);
+  const ascMax = ascentInputToMeters(ascentRange.max, units);
 
   const visible = rows
-    .filter(({ trail }) => {
+    .filter(({ trail, distanceMeters }) => {
+      if (!inRange(distanceMeters, distMin, distMax)) return false;
+      if (!inRange(trail.elevationGainM, ascMin, ascMax)) return false;
       if (region !== null && trail.region !== region) return false;
       if (difficulty !== null && trail.difficulty !== difficulty) return false;
       if (needle.length === 0) return true;
@@ -75,11 +106,21 @@ export default function TrailsScreen() {
       return a.trail.name.localeCompare(b.trail.name);
     });
 
-  const filtered = needle.length > 0 || region !== null || difficulty !== null;
+  const filtered =
+    needle.length > 0 ||
+    region !== null ||
+    difficulty !== null ||
+    distMin !== null ||
+    distMax !== null ||
+    ascMin !== null ||
+    ascMax !== null;
 
   const clearFilters = () => {
+    setQuery("");
     setRegion(null);
     setDifficulty(null);
+    setDistanceRange(EMPTY_RANGE);
+    setAscentRange(EMPTY_RANGE);
   };
 
   const trailList = (
@@ -96,6 +137,19 @@ export default function TrailsScreen() {
       }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
+      ListHeaderComponent={
+        <RangeFilters
+          units={units}
+          distance={distanceRange}
+          ascent={ascentRange}
+          onDistanceChange={setDistanceRange}
+          onAscentChange={setAscentRange}
+          bounds={bounds}
+          count={visible.length}
+          canReset={filtered}
+          onReset={clearFilters}
+        />
+      }
       onScroll={handleScroll}
       scrollEventThrottle={16}
       ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
@@ -107,8 +161,8 @@ export default function TrailsScreen() {
           action={
             filtered
               ? {
-                  label: "Clear filters",
-                  accessibilityLabel: "Clear search and filters",
+                  label: "Reset",
+                  accessibilityLabel: "Reset all filters",
                   onPress: clearFilters,
                 }
               : undefined
