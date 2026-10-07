@@ -14,6 +14,7 @@ import { TrailCard, difficultyLabel } from "@/src/components/TrailCard";
 import { regions, trails, type Difficulty, type Trail } from "@/src/data/trails";
 import { useScrollVisibility } from "@/src/hooks/useScrollVisibility";
 import { routeDistanceMeters } from "@/src/lib/geo";
+import { useSettingsStore } from "@/src/store/settingsStore";
 import { spacing } from "@/src/theme";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "moderate", "hard", "expert"];
@@ -38,6 +39,8 @@ export default function TrailsScreen() {
   const [query, setQuery] = useState("");
   const [region, setRegion] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+  const [savedOnly, setSavedOnly] = useState(false);
+  const savedTrailIds = useSettingsStore((s) => s.savedTrailIds);
   const [sort, setSort] = useState<SortKey>("name");
   const {
     onScroll: handleScroll,
@@ -58,6 +61,7 @@ export default function TrailsScreen() {
     .filter(({ trail }) => {
       if (region !== null && trail.region !== region) return false;
       if (difficulty !== null && trail.difficulty !== difficulty) return false;
+      if (savedOnly && !savedTrailIds.includes(trail.id)) return false;
       if (needle.length === 0) return true;
       return (
         trail.name.toLowerCase().includes(needle) ||
@@ -75,12 +79,15 @@ export default function TrailsScreen() {
       return a.trail.name.localeCompare(b.trail.name);
     });
 
-  const filtered = needle.length > 0 || region !== null || difficulty !== null;
+  const filtered = needle.length > 0 || region !== null || difficulty !== null || savedOnly;
 
   const clearFilters = () => {
     setRegion(null);
     setDifficulty(null);
+    setSavedOnly(false);
   };
+
+  const showSavedHint = savedOnly && savedTrailIds.length === 0;
 
   const trailList = (
     <AnimatedFlashList
@@ -101,9 +108,13 @@ export default function TrailsScreen() {
       ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
       ListEmptyComponent={
         <EmptyState
-          icon="trail-sign-outline"
-          title="No trails found"
-          description="Nothing matches the current search and filters."
+          icon={showSavedHint ? "bookmark-outline" : "trail-sign-outline"}
+          title={showSavedHint ? "No saved trails" : "No trails found"}
+          description={
+            showSavedHint
+              ? "Tap the bookmark on a trail card or trail page to save it here."
+              : "Nothing matches the current search and filters."
+          }
           action={
             filtered
               ? {
@@ -172,6 +183,14 @@ export default function TrailsScreen() {
               }
             />
           ))}
+        </FilterSection>
+
+        <FilterSection title="Collection">
+          <FilterChip
+            label="Saved"
+            selected={savedOnly}
+            onPress={() => setSavedOnly(!savedOnly)}
+          />
         </FilterSection>
       </SearchFilterControls>
 

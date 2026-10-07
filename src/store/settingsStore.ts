@@ -8,9 +8,11 @@ interface SettingsState {
   units: DistanceUnit;
   hikeReminders: boolean;
   offlineMaps: boolean;
+  savedTrailIds: string[];
   setUnits: (units: DistanceUnit) => void;
   setHikeReminders: (enabled: boolean) => void;
   setOfflineMaps: (enabled: boolean) => void;
+  toggleSavedTrail: (id: string) => void;
 }
 
 const read = <T,>(key: string, fallback: T): T => {
@@ -25,10 +27,11 @@ const read = <T,>(key: string, fallback: T): T => {
 
 const write = (key: string, value: unknown) => storage.set(key, JSON.stringify(value));
 
-export const useSettingsStore = create<SettingsState>((set) => ({
+export const useSettingsStore = create<SettingsState>((set, get) => ({
   units: read<DistanceUnit>('units', 'metric'),
   hikeReminders: read('hikeReminders', true),
   offlineMaps: read('offlineMaps', false),
+  savedTrailIds: read<string[]>('savedTrailIds', []),
   setUnits: (units) => {
     write('units', units);
     set({ units });
@@ -40,5 +43,13 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setOfflineMaps: (offlineMaps) => {
     write('offlineMaps', offlineMaps);
     set({ offlineMaps });
+  },
+  toggleSavedTrail: (id) => {
+    const current = get().savedTrailIds;
+    const savedTrailIds = current.includes(id)
+      ? current.filter((saved) => saved !== id)
+      : [...current, id];
+    write('savedTrailIds', savedTrailIds);
+    set({ savedTrailIds });
   },
 }));

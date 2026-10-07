@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { RouteMap } from '@/src/components/RouteMap';
-import { difficultyColor, difficultyLabel } from '@/src/components/TrailCard';
+import { BookmarkButton, difficultyColor, difficultyLabel } from '@/src/components/TrailCard';
 import { getTrail, trailPhotoUrl } from '@/src/data/trails';
 import { formatDistance, formatDuration, formatElevation } from '@/src/lib/format';
 import { useSettingsStore } from '@/src/store/settingsStore';
@@ -40,7 +40,12 @@ export default function TrailDetailScreen() {
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
     >
-      <Stack.Screen options={{ title: trail.name }} />
+      <Stack.Screen
+        options={{
+          title: trail.name,
+          headerRight: () => <BookmarkButton trailId={trail.id} trailName={trail.name} />,
+        }}
+      />
 
       <Image
         source={{ uri: trailPhotoUrl(trail, 900) }}

@@ -27,6 +27,29 @@ export function difficultyLabel(difficulty: Difficulty): string {
   return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 }
 
+export function BookmarkButton({ trailId, trailName }: { trailId: string; trailName: string }) {
+  const { colors } = useTheme();
+  const saved = useSettingsStore((s) => s.savedTrailIds.includes(trailId));
+  const toggleSavedTrail = useSettingsStore((s) => s.toggleSavedTrail);
+
+  return (
+    <Pressable
+      onPress={() => toggleSavedTrail(trailId)}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={saved ? `Remove ${trailName} from saved trails` : `Save ${trailName}`}
+      accessibilityState={{ selected: saved }}
+      style={styles.bookmark}
+    >
+      <Ionicons
+        name={saved ? 'bookmark' : 'bookmark-outline'}
+        size={22}
+        color={saved ? colors.primary : colors.textMuted}
+      />
+    </Pressable>
+  );
+}
+
 interface TrailCardProps {
   trail: Trail;
   distanceMeters: number;
@@ -56,7 +79,7 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
         accessibilityIgnoresInvertColors
       />
       <View style={styles.body}>
-        <Text numberOfLines={1} style={[styles.name, { color: colors.text }]}>
+        <Text numberOfLines={1} style={[styles.name, styles.nameWithBookmark, { color: colors.text }]}>
           {trail.name}
         </Text>
         <Text numberOfLines={1} style={[styles.region, { color: colors.textMuted }]}>
@@ -88,6 +111,9 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
           </View>
         </View>
       </View>
+      <View style={styles.bookmarkSlot}>
+        <BookmarkButton trailId={trail.id} trailName={trail.name} />
+      </View>
     </Pressable>
   );
 }
@@ -116,6 +142,9 @@ const styles = StyleSheet.create({
   photo: { width: 92, height: 92, borderRadius: radius.md },
   body: { flex: 1, justifyContent: 'space-between' },
   name: { fontSize: 16, fontWeight: '600' },
+  nameWithBookmark: { marginRight: 28 },
+  bookmarkSlot: { position: 'absolute', top: spacing.md, right: spacing.md },
+  bookmark: { alignItems: 'center', justifyContent: 'center' },
   region: { fontSize: 13, marginTop: 2 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.sm },
   stat: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
