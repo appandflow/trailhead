@@ -1,7 +1,8 @@
 import { FlashList } from "@shopify/flash-list";
 import { BlurTargetView } from "expo-blur";
 import { useRef, useState } from "react";
-import { Platform, View } from "react-native";
+import { Platform, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 
 import { EmptyState } from "@/src/components/EmptyState";
@@ -35,6 +36,9 @@ const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<TrailRow>);
 
 export default function TrailsScreen() {
   const blurTargetRef = useRef<View>(null);
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const numColumns = width > height ? 2 : 1;
   const [query, setQuery] = useState("");
   const [region, setRegion] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -86,11 +90,18 @@ export default function TrailsScreen() {
     <AnimatedFlashList
       data={visible}
       keyExtractor={(row) => row.trail.id}
+      key={numColumns}
+      numColumns={numColumns}
       renderItem={({ item }) => (
-        <TrailCard trail={item.trail} distanceMeters={item.distanceMeters} />
+        <View
+          style={numColumns > 1 ? { paddingHorizontal: spacing.xs } : undefined}
+        >
+          <TrailCard trail={item.trail} distanceMeters={item.distanceMeters} />
+        </View>
       )}
       contentContainerStyle={{
-        paddingHorizontal: spacing.lg,
+        paddingLeft: spacing.lg + insets.left - (numColumns > 1 ? spacing.xs : 0),
+        paddingRight: spacing.lg + insets.right - (numColumns > 1 ? spacing.xs : 0),
         paddingBottom: spacing.lg,
         paddingTop: SEARCH_FILTER_CONTROLS_HEIGHT + spacing.lg,
       }}

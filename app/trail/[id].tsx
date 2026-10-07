@@ -1,7 +1,9 @@
+import { useHeaderHeight } from '@react-navigation/elements';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RouteMap } from '@/src/components/RouteMap';
 import { difficultyColor, difficultyLabel } from '@/src/components/TrailCard';
@@ -14,6 +16,10 @@ export default function TrailDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const units = useSettingsStore((s) => s.units);
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+  const landscape = width > height;
   const trail = getTrail(id);
 
   if (!trail) {
@@ -35,13 +41,8 @@ export default function TrailDetailScreen() {
   const averageGrade = (trail.elevationGainM / (trail.distanceKm * 1000)) * 100;
   const accent = difficultyColor(trail.difficulty, colors);
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={styles.content}
-    >
-      <Stack.Screen options={{ title: trail.name }} />
-
+  const media = (
+    <>
       <Image
         source={{ uri: trailPhotoUrl(trail, 900) }}
         style={[styles.hero, { backgroundColor: colors.surfaceAlt }]}
@@ -50,6 +51,14 @@ export default function TrailDetailScreen() {
         accessibilityIgnoresInvertColors
       />
 
+      <View style={[styles.mapFrame, { borderColor: colors.border }]}>
+        <RouteMap points={trail.route} style={styles.map} />
+      </View>
+
+    </>
+  );
+  const details = (
+    <>
       <View style={styles.section}>
         <Text style={[styles.name, { color: colors.text }]}>{trail.name}</Text>
         <View style={styles.metaRow}>
@@ -68,10 +77,6 @@ export default function TrailDetailScreen() {
             {trail.reviewCount} reviews
           </Text>
         </View>
-      </View>
-
-      <View style={[styles.mapFrame, { borderColor: colors.border }]}>
-        <RouteMap points={trail.route} style={styles.map} />
       </View>
 
       <View style={[styles.statsRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -141,12 +146,50 @@ export default function TrailDetailScreen() {
           </View>
         </View>
       </View>
+    </>
+  );
+
+  if (landscape) {
+    return (
+      <View
+        style={[
+          styles.landscape,
+          { backgroundColor: colors.background, paddingLeft: insets.left, paddingRight: insets.right },
+        ]}
+      >
+        <Stack.Screen options={{ title: trail.name }} />
+        <ScrollView
+          style={styles.column}
+          contentContainerStyle={[styles.content, { paddingTop: headerHeight }]}
+        >
+          {media}
+        </ScrollView>
+        <ScrollView
+          style={styles.column}
+          contentContainerStyle={[styles.content, { paddingTop: headerHeight }]}
+        >
+          {details}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={styles.content}
+    >
+      <Stack.Screen options={{ title: trail.name }} />
+      {media}
+      {details}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   content: { paddingBottom: spacing.xxl, gap: spacing.lg },
+  landscape: { flex: 1, flexDirection: 'row' },
+  column: { flex: 1 },
   hero: { width: '100%', height: 220 },
   section: { paddingHorizontal: spacing.lg, gap: spacing.sm },
   name: { fontSize: 24, fontWeight: '700' },
