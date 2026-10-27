@@ -6,7 +6,7 @@ Browse a catalogue of 200 trails with route maps and elevation profiles, record 
 hike with live GPS tracking, and review your history with per-month stats and
 charts.
 
-https://github.com/user-attachments/assets/21596f10-5220-42e2-8061-237d29df3e8b
+<a href="./docs/media/trailhead-demo.mp4"><img src="./docs/media/trailhead-demo.gif" alt="Trailhead demo" width="320"></a>
 
 ![Trailhead screens](./docs/media/trailhead-screens.png)
 
