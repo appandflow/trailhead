@@ -107,16 +107,18 @@ function buildModel(
   const yFor = (elevation: number) =>
     bottom - ((elevation - minElevation) / spanElevation) * (bottom - top);
 
-  const line = Skia.Path.Make();
-  line.moveTo(xFor(points[0].distanceKm), yFor(points[0].elevation));
+  const builder = Skia.PathBuilder.Make();
+  builder.moveTo(xFor(points[0].distanceKm), yFor(points[0].elevation));
   for (let i = 1; i < points.length; i++) {
-    line.lineTo(xFor(points[i].distanceKm), yFor(points[i].elevation));
+    builder.lineTo(xFor(points[i].distanceKm), yFor(points[i].elevation));
   }
 
-  const area = line.copy();
-  area.lineTo(xFor(endKm), height);
-  area.lineTo(xFor(startKm), height);
-  area.close();
+  const line = builder.build();
+  const area = builder
+    .lineTo(xFor(endKm), height)
+    .lineTo(xFor(startKm), height)
+    .close()
+    .build();
 
   const gridYs: number[] = [];
   for (let i = 0; i < GRID_LINE_COUNT; i++) {
