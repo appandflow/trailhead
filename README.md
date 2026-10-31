@@ -23,7 +23,7 @@ charts.
 
 ## Stack
 
-Expo SDK 58 canary, React Native 0.87, TypeScript, expo-router. Maps via
+Expo SDK 58, React Native 0.88, TypeScript, expo-router. Maps via
 `react-native-maps`, charts via `@shopify/react-native-skia`, lists via
 `@shopify/flash-list`, storage via `expo-sqlite` with Drizzle, preferences via
 `react-native-mmkv`, animation via Reanimated and Gesture Handler.
@@ -54,16 +54,10 @@ the `appandflow` Expo account.
 The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run direct CocoaPods
 commands through Bundler, for example `cd ios && bundle exec pod install`.
 
-The SDK 58 canary is pinned with all Expo modules in `package-lock.json`.
-Scoped npm overrides align Vector Icons' Expo Font, Drizzle's Expo SQLite, and
-Expo Modules Core's Worklets peer ranges with the verified root versions.
-Worklets' Metro configuration peer is installed explicitly; `npm ci` and
-`npm ls --all` work without ignoring peer dependencies. Reanimated 4.6.0, Worklets
-0.12.1, Safe Area Context 5.9.1, and Skia 2.11.2 are excluded from
-`expo install --fix`: the canary's older recommendations fail native builds
-with this dependency set. ExpoVideo builds from source on iOS because its
-canary prebuilt framework depends on an unavailable `Testing.framework` and
-aborts at launch. Other prebuilt Expo modules stay enabled.
+The released SDK 58 dependencies are pinned in `package-lock.json`. Run
+`npx expo install --check` to verify SDK compatibility, or
+`npx expo install --fix` to realign the dependencies. Worklets' Metro
+configuration peer is installed explicitly at the React Native version.
 TypeScript uses RN's temporary `react-native-legacy-deep-imports` condition
 until the dependencies support the new strict types.
 

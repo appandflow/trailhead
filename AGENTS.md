@@ -1,6 +1,6 @@
 # Trailhead
 
-A hike recording and trail browsing app. Expo SDK 58 canary, React Native 0.87,
+A hike recording and trail browsing app. Expo SDK 58, React Native 0.88,
 TypeScript, expo-router.
 
 ## Layout
