@@ -13,17 +13,18 @@ before continuing:
 ```bash
 git status --short
 git fetch --prune
-stim doctor
-stim worktree create <name> --base origin/main --carry-ignored --dir .worktrees
-cd <printed-path>
-git checkout -b @janic/<branch>
+git worktree add -b @janic/<branch> ../trailhead-<name> origin/main
+cd ../trailhead-<name>
+stim doctor --platform ios # or: --platform android
+stim worktree warm
 stim start
 stim ios # or: stim android
 ```
 
 Use the full device ID from Stim's summary for every device command.
-`--carry-ignored` copies safe ignored paths such as dependencies, Pods, native
-output, and `.env`, plus uncommitted tracked changes that fit the selected base.
+`stim worktree warm` copies missing ignored paths such as dependencies, Pods,
+native output, and `.env` from the main checkout. Wait for it to exit 0 before
+`stim start`. It never copies uncommitted tracked changes.
 Android builds without `GOOGLE_MAPS_API_KEY`, but map tiles are blank.
 
 Trailhead commits `ios/` and `android/`. Make native changes in those projects;

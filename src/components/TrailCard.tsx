@@ -59,12 +59,14 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
       ]}
     >
       <Transition.Boundary.Target
-        style={{ width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceAlt }}
+        style={[styles.photo, { backgroundColor: colors.surfaceAlt }]}
       >
         <Image
           source={{ uri: trailPhotoUrl(trail, 320) }}
-          style={{ width: '100%', height: '100%' }}
+          style={styles.photoImage}
           contentFit="cover"
+          recyclingKey={trail.id}
+          transition={150}
           cachePolicy="memory-disk"
           accessibilityIgnoresInvertColors
         />
@@ -127,6 +129,8 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
   },
+  photo: { width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden' },
+  photoImage: { width: '100%', height: '100%' },
   body: { flex: 1, justifyContent: 'space-between' },
   name: { fontSize: 16, fontWeight: '600' },
   region: { fontSize: 13, marginTop: 2 },

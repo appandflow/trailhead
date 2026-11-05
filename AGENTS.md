@@ -1,6 +1,6 @@
 # Trailhead
 
-A hike recording and trail browsing app. Expo SDK 57, React Native 0.86,
+A hike recording and trail browsing app. Expo SDK 58, React Native 0.88,
 TypeScript, expo-router.
 
 ## Layout
@@ -46,7 +46,7 @@ repo-root `.env`. The app builds without a key and shows blank map tiles.
 ## Running
 
 ```bash
-npm install
+npm ci
 bundle install
 npx expo run:ios       # or: npx expo run:android
 ```
@@ -54,8 +54,10 @@ npx expo run:ios       # or: npx expo run:android
 The repository pins Ruby 3.3.4 and CocoaPods 1.16.2. Run CocoaPods commands
 through Bundler, for example `cd ios && bundle exec pod install`.
 
-This public test app does not contain EAS configuration. Use only local builds
-and simulator sessions.
+`eas.json` carries two development profiles: `development` (Android emulator,
+iOS device) and `development-simulator` (iOS simulator). EAS builds and EAS
+Simulator sessions need membership of the `appandflow` Expo account, so they
+cost nothing to a reader of this repository; local builds need no account.
 
 Note that `-derivedDataPath ios/build` collides with React Native's codegen output
 in `ios/build/generated`. Use a derived data path outside `ios/build`, and re-run
