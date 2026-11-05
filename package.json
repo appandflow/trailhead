@@ -62,6 +62,7 @@
     "react-native-nitro-modules": "^0.36.5",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.10.1",
+    "react-native-screen-transitions": "4.1.0",
     "react-native-screens": "~4.30.0",
     "react-native-svg": "15.16.0",
     "react-native-web": "~0.21.4",

@@ -6,6 +6,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "react-native-screen-transitions": [
+        "./node_modules/react-native-screen-transitions/lib/typescript/index.d.ts"
       ]
     }
   },
