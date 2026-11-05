@@ -1,5 +1,4 @@
 import { Fragment, useEffect, type ComponentProps, type ComponentType } from 'react';
-import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -37,7 +36,6 @@ const TransitionScreen = Stack.Screen as ComponentType<Omit<RouterScreenProps, '
 
 function trailTransition(id: string) {
   return {
-    navigationMaskEnabled: Platform.OS === 'ios',
     gestureEnabled: true,
     gestureDirection: ['horizontal', 'horizontal-inverted', 'vertical'],
     transitionSpec: Transition.Specs.Zoom,

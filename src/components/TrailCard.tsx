@@ -47,7 +47,6 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
   return (
     <TrailCardBoundary
       id={`trail-${trail.id}`}
-      escapeClipping
       onPress={() => router.push({ pathname: '/trail/[id]', params: { id: trail.id } })}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
