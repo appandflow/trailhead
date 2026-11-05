@@ -52,6 +52,7 @@ export function TrailCard({ trail, distanceMeters }: TrailCardProps) {
         source={{ uri: trailPhotoUrl(trail, 320) }}
         style={[styles.photo, { backgroundColor: colors.surfaceAlt }]}
         contentFit="cover"
+        recyclingKey={trail.id}
         transition={150}
         accessibilityIgnoresInvertColors
       />
